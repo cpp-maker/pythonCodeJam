@@ -5,7 +5,7 @@ import time
 a = time.time()
 digit = printable.strip()
 #print(digit)
-lenght = input("Password Lenght ")
+lenght = input("Password Lenght ") #length
 if lenght == '':
 	print("no password is of 0 words")
 	exit()
