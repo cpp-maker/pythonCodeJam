@@ -1,5 +1,5 @@
 # This Python file uses the following encoding: utf-8
-# Add function to enter master password using hash
+# var = 4 used so program still compiles while functions incomplete
 # Add function to enter old passwords
 # Use length to reccommend to change old passwords
 # Create function to edit update passwords
@@ -9,6 +9,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QAction,
 import hashlib
 
 masterPass = ""
+vaultAuth = False
 
 class CreatePassDialog(QDialog):
     def __init__(self,*args,**kwargs):
@@ -37,7 +38,25 @@ class CreatePassDialog(QDialog):
     def exit():
         sys.exit()
 
-class SaveFileLine:
+class AccessVaultDialog(QDialog):
+    def __init__(self,*args,**kwargs):
+        super(AccessVaultDialog,self).__init__(*args,**kwargs)
+
+        self.label = QLabel("Enter your master password to unlock your password vault:",self)
+        self.enterLine = QLineEdit(self)
+        self.dialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.dialog.accepted.connect(self.verifyPassword)
+        self.dialog.rejected.connect(self.close())
+
+    def verifyPassword(self):
+        global masterPass
+        password = masterPass
+
+        if hashlib.sha256(self.enterLine.text().encode('utf-8').hexdigest()) == password:
+            vaultAuth = True
+        self.close()
+
+        class SaveFileLine:
     def __init__(self,account,encryptedPassword): #class to store each line of the save file
         self.encryptedPassword = encryptedPassword
         self.account = account
@@ -107,11 +126,32 @@ class PasswordGenerator(QMainWindow):
         self.filename = "passwordSaveData.sav"
 
         self.readFileData()
+        global masterPass
+        masterPass = self.saveFile.getPasswordHash()
 
     def generatePassword(self):
         #insert function here, and encrypt
         #self.saveFile.addLine(SaveFileLine(self.account,self.encryptedPass))
         var = 4
+
+    def findWeakPasswords(self):
+        #find and store weak passwords in a list
+        var = 4
+
+    def recommendStrongPassword(self):
+        #create passwords of random fixed size automatically for certain sites, and replace if user confirms
+        var = 4
+
+    def unlockApp(self):
+        #app starts off with just log in page, then when unlocked allows user to access all features, with password search and generate password on home page, pass search in top right corner
+        #add existing password, delete password, etc. all in menu
+        #home page reccommends stronger passwords based on length and simplicity of existing passwords
+        var = 4
+
+    def authThisSession(self):
+        enterMasterPass = AccessVaultDialog(self)
+        enterMasterPass.setWindowTitle("Access your password vault!")
+        enterMasterPass.exec_()
 
     def savePassToFile(self): #pass savefile object to save
         file = open(self.filename,'wt')
