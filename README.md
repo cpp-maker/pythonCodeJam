@@ -6,8 +6,10 @@ Python code can be run with the GUI code
 Upload any python code with command, make sure to cd into the project folder
 
 >git add .
+
 >git commit -am "commit message here"
->git push origin pythonBackend
+
+>git push origin master
 
 Download new code:
 >git pull <branch>, i.e. master or pythonBackend are branches
