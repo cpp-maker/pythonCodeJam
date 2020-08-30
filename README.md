@@ -1,4 +1,6 @@
 # pythonCodeJam
+Created with PyQt5, under GNU GPL License v3
+
 TWT python code jam
 
 Python code can be run with the GUI code
