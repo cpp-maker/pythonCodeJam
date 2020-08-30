@@ -56,7 +56,7 @@ class AccessVaultDialog(QDialog):
             vaultAuth = True
         self.close()
 
-        class SaveFileLine:
+class SaveFileLine:
     def __init__(self,account,encryptedPassword): #class to store each line of the save file
         self.encryptedPassword = encryptedPassword
         self.account = account
