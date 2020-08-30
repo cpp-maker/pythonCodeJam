@@ -1,4 +1,8 @@
 # This Python file uses the following encoding: utf-8
+# Add function to enter master password using hash
+# Add function to enter old passwords
+# Use length to reccommend to change old passwords
+# Create function to edit update passwords
 import sys
 import os
 from PySide2.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QAction, QFormLayout, QLineEdit, QSpinBox, QWidget, QDialog, QVBoxLayout, QDialogButtonBox
