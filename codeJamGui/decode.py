@@ -44,12 +44,13 @@ def pass_gen(lenght):
 def encrypt(key, password):
 	f = Fernet(key)
 	encrypted = f.encrypt(password.encode())  # Encrypt the bytes
-
+	return encrypted
 def decrypt(key, line):
 	file = open("""hey pro change this""", 'rb')
 	f = Fernet(key)
 	lines = file.readlines()# it'll store lines in list
 	decrypted = f.decrypt(lines[line])
+	return decrypted
 
 def what_user_want(input_of_user, password_length=0, password_provided=0, line=0):
 	secure_key = key_gen(password_provided)
