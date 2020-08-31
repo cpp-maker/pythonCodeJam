@@ -21,6 +21,7 @@ import sys
 import os
 from PySide2.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QAction, QFormLayout, QLineEdit, QSpinBox, QWidget, QDialog, QVBoxLayout, QDialogButtonBox
 import hashlib
+import pyjamGen as gen
 
 masterPass = ""
 vaultAuth = False
@@ -60,7 +61,7 @@ class AccessVaultDialog(QDialog):
         self.enterLine = QLineEdit(self)
         self.dialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.dialog.accepted.connect(self.verifyPassword)
-        self.dialog.rejected.connect(self.close())
+        self.dialog.rejected.connect(sys.exit())
 
     def verifyPassword(self):
         global masterPass
@@ -111,9 +112,16 @@ class PasswordGenerator(QMainWindow):
         self.statusBar()
         self.menu = self.menuBar()
         self.spinBox = QSpinBox()
+        self.userLineEdit = QLineEdit()
+        self.userLineLabel = QLabel(self.tr("Enter website password is for:"))
+        self.spinBox.valueChanged.connect(self.generatePassword)
         self.passwordLengthInputLabel = QLabel(self.tr("Password Length:"))
 
+        self.createNewPasswordField.addRow(self.userLineLabel,self.userLineEdit)
         self.createNewPasswordField.addRow(self.passwordLengthInputLabel,self.spinBox)
+        self.btn = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.btn.accepted.connect(self.generatePassword)
+        self.btn.rejected.connect(self.resetParameters)
 
         self.centralWidget.setLayout(self.createNewPasswordField)
         #add actions below
@@ -143,9 +151,15 @@ class PasswordGenerator(QMainWindow):
         global masterPass
         masterPass = self.saveFile.getPasswordHash()
 
+        authThisSession()
+
+    def resetParameters(self):
+        self.userLineEdit.clear()
+        self.spinBox.setValue(0)
+
     def generatePassword(self):
-        #insert function here, and encrypt
-        #self.saveFile.addLine(SaveFileLine(self.account,self.encryptedPass))
+        password = gen.gen_code(self.spinBox.value())
+        self.saveFile.addLine(SaveFileLine(self.account,self.encryptedPass))
         var = 4
 
     def findWeakPasswords(self):
