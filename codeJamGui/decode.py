@@ -21,8 +21,8 @@ import string
 import random
 
 password_length = input()#length
-def key_gen():
-	password_provided = input('enter password:')
+password_provided = input('enter password:')
+def key_gen(password_provided):
 	password = password_provided.encode()  # Convert to type bytes
 	salt = b'H\x8a\x04\x1b\xbdV\xb9\xfd\xab\x02\xfe!\xeb\x9b$\xce'
 	kdf = PBKDF2HMAC(
@@ -40,7 +40,7 @@ def pass_gen(lenght):
 		passwordd = ("".join(random.choice(string.printable.strip())for _ in range(int(lenght))))
 		return passwordd
 	except Exception:
-		print("something went wrong!!!!")
+		print("something went wrong!!!! try entering the length  like 10, 11 etc.")
 
 def encrypt(key, password):
 	f = Fernet(key)
@@ -58,7 +58,12 @@ def decrypt(key, line):
 	except Exception:
 		print("wrong password")
 
-def what_user_want(input_of_user):
+def what_user_want(input_of_user, password_length=0, password_provided=0, line=0):
+	secure_key = key_gen(password_provided)
+	random_password = pass_gen(password_length)
 	if input_of_user == "encrypt":
-
-	
+		encrypt(secure_key, random_password)
+	elif input_of_user == "decrypt":
+		decrypt(secure_key, line)
+	else:
+		exit()
