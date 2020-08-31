@@ -76,13 +76,33 @@ class SaveFileLine:
         self.encryptedPassword = encryptedPassword
         self.account = account
 
-    def getLine(self):
+    def __getitem__(self,index):
+        if index = self.account:
+            return True
+        else:
+            return False
+
+    def __str__(self):
         return self.account + ',' + self.encryptedPassword + '\n'
+
+    def getAccountName(self):
+        return self.account
+
+    def decryptPassword(self):
+        global vaultAuth
+        if vaultAuth == False:
+            sys.exit()
+        return decrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',self.encryptedPassword)
 
 class SaveFile: #data type to store all of the lines
     def __init__(self,passwordHash,lines):
         self.passwordHash = passwordHash
         self.lines = lines
+
+    def __getitem__(self,index):
+        if index > len(self.lines):
+            raise IndexError("Index out of range")
+        return self.lines[index]
 
     def getPasswordHash(self):
         return self.passwordHash
@@ -90,11 +110,14 @@ class SaveFile: #data type to store all of the lines
     def getLines(self):
         return self.lines
 
-    def addLine(self,line):
+    def append(self,line):
         self.lines.append(line)
 
     def setHashPass(self,hash):
         self.passwordHash = hash
+
+    def __sub__(self,index):
+        self.lines.pop(index)
 
     def numberOfLines(self):
         return len(self.lines)
@@ -140,8 +163,6 @@ class PasswordGenerator(QMainWindow):
         self.file.addAction(self.viewPasswords)
         self.passMenu = self.file.addMenu(self.passMenu)
 
-        self.filePath = ""
-
         self.saveFile = SaveFile(0,[])
         self.account = ""
         self.encryptedPass = ""
@@ -157,25 +178,33 @@ class PasswordGenerator(QMainWindow):
         self.userLineEdit.clear()
         self.spinBox.setValue(0)
 
+    def deletePassword(self,account):
+        global vaultAuth
+        if vaultAuth == False:
+            sys.exit()
+        for i in range(0,saveFile.numberOfLines()):
+            if saveFile[i][account]:
+                self.saveFile - i
+        self.savePassTofile()
+
+    def deleteAllPasswords(self):
+        global vaultAuth
+        global masterPass
+        if vaultAuth == False:
+            sys.exit()
+        self.saveFile = SaveFile(masterPass,[])
+        self.savePassTofile()
+
     def generatePassword(self):
+        global vaultAuth
+        if vaultAuth = False:
+            sys.exit()
         password = gen.gen_code(self.spinBox.value())
+        self.account = userLineEdit.text()
+        self.encryptedPass = encrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',password)
         self.saveFile.addLine(SaveFileLine(self.account,self.encryptedPass))
-        var = 4
-
-    def findWeakPasswords(self):
-        #find and store weak passwords in a list
-        var = 4
-
-    def recommendStrongPassword(self):
-        #create passwords of random fixed size automatically for certain sites, and replace if user confirms
-        var = 4
-
-    def unlockApp(self):
-        #app starts off with just log in page, then when unlocked allows user to access all features, with password search and generate password on home page, pass search in top right corner
-        #add existing password, delete password, etc. all in menu
-        #home page reccommends stronger passwords based on length and simplicity of existing passwords
-        var = 4
-
+        self.savePassToFile()
+        
     def authThisSession(self):
         enterMasterPass = AccessVaultDialog(self)
         enterMasterPass.setWindowTitle("Access your password vault!")
@@ -220,8 +249,10 @@ class PasswordGenerator(QMainWindow):
             self.saveFile.addLine(saveFileLine)
 
     def searchForPassword(accountName):
-        #create function to search for a password by account name
-        var = 4
+        for i in saveFile:
+            if i[accountName]:
+                return str(i)
+        return "No Password Found"
 
     def findComma(line):
         for i in range(0,len(line)):

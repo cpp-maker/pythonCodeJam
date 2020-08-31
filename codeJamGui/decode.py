@@ -22,8 +22,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import string
 import random
 
-password_length = input()#length
-password_provided = input('enter password:')
+
 def key_gen(password_provided):
 	password = password_provided.encode()  # Convert to type bytes
 	salt = b'\xa5\x81\xadC\x0eF\x17gaxj\x87fF\xeb\xc9\x03~\x9f\xf9|\xc5\xf4\x80\xc6\xd6\xbe\xb7\xd2\x98\xfe\x91'
@@ -45,12 +44,10 @@ def encrypt(key, password):
 	f = Fernet(key)
 	encrypted = f.encrypt(password.encode())  # Encrypt the bytes
 	return encrypted
+
 def decrypt(key, line):
-	file = open("""hey pro change this""", 'rb')
 	f = Fernet(key)
-	lines = file.readlines()# it'll store lines in list
-	decrypted = f.decrypt(lines[line])
-	return decrypted
+	return f.decrypt(line)
 
 def what_user_want(input_of_user, password_length=0, password_provided=0, line=0):
 	secure_key = key_gen(password_provided)
@@ -61,3 +58,8 @@ def what_user_want(input_of_user, password_length=0, password_provided=0, line=0
 		decrypt(secure_key, line)
 	else:
 		exit()
+
+print(key_gen("Hello"))
+enc = encrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',"Hello")
+print(enc)
+print(decrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',enc))
