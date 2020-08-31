@@ -268,6 +268,7 @@ class PasswordGenerator(QMainWindow):
         self.viewPass()
 
     def viewPass(self):
+        self.resetParameters()
         text = ""
         for i in self.saveFile:
             text += i.getAccountName() + ": " + str(i.decryptPassword())[2:-1] + "\n"
