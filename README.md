@@ -3,18 +3,11 @@ Created with PyQt5, under GNU GPL License v3
 
 TWT python code jam
 
-Python code can be run with the GUI code
+A password generator and storer.
+Must install qt5 and cryptography.
+>pip3 install cryptography
 
-Upload any python code with command, make sure to cd into the project folder
-
->git add .
-
->git commit -am "commit message here"
-
->git push origin master
-
-Download new code:
->git pull <branch>, i.e. master or pythonBackend are branches
+>qt5 is available on website qt.io
 
 Criteria for project:
 >*Generate passwords when user asks
