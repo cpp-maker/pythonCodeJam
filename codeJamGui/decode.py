@@ -22,44 +22,25 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import string
 import random
 
-
-def key_gen(password_provided):
-	password = password_provided.encode()  # Convert to type bytes
-	salt = b'\xa5\x81\xadC\x0eF\x17gaxj\x87fF\xeb\xc9\x03~\x9f\xf9|\xc5\xf4\x80\xc6\xd6\xbe\xb7\xd2\x98\xfe\x91'
-	kdf = PBKDF2HMAC(
-		algorithm=hashes.SHA256(),
-		length=32,
-		salt=salt,
-		iterations=100000,
-		backend=default_backend()
-	)
-	key = base64.urlsafe_b64encode(kdf.derive(password))  # this is the encrypted  password
-	return key
-
 def pass_gen(lenght):
-	passwordd = ("".join(random.choice(string.printable.strip())for _ in range(int(lenght))))
-	return passwordd
+    passwordd = ("".join(random.choice(string.printable.strip())for _ in range(int(lenght))))
+    return passwordd
 
 def encrypt(key, password):
-	f = Fernet(key)
-	encrypted = f.encrypt(password.encode())  # Encrypt the bytes
-	return encrypted
+    f = Fernet(key)
+    encrypted = f.encrypt(password.encode())  # Encrypt the bytes
+    return encrypted
 
 def decrypt(key, line):
-	f = Fernet(key)
-	return f.decrypt(line)
+    f = Fernet(key)
+    return f.decrypt(line)
 
 def what_user_want(input_of_user, password_length=0, password_provided=0, line=0):
-	secure_key = key_gen(password_provided)
-	random_password = pass_gen(password_length)
-	if input_of_user == "encrypt":
-		encrypt(secure_key, random_password)
-	elif input_of_user == "decrypt":
-		decrypt(secure_key, line)
-	else:
-		exit()
-
-print(key_gen("Hello"))
-enc = encrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',"Hello")
-print(enc)
-print(decrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',enc))
+    secure_key = key_gen(password_provided)
+    random_password = pass_gen(password_length)
+    if input_of_user == "encrypt":
+        encrypt(secure_key, random_password)
+    elif input_of_user == "decrypt":
+        decrypt(secure_key, line)
+    else:
+        exit()

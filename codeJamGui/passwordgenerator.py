@@ -19,12 +19,14 @@
 # Create function to edit update passwords
 import sys
 import os
-from PySide2.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QAction, QFormLayout, QLineEdit, QSpinBox, QWidget, QDialog, QVBoxLayout, QDialogButtonBox
+from PySide2.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QAction, QFormLayout, QLineEdit, QSpinBox, QWidget, QDialog, QVBoxLayout, QDialogButtonBox, QPlainTextEdit
 import hashlib
 import pyjamGen as gen
+import decode as d
 
 masterPass = ""
 vaultAuth = False
+newLine = 0
 
 class CreatePassDialog(QDialog):
     def __init__(self,*args,**kwargs):
@@ -45,8 +47,7 @@ class CreatePassDialog(QDialog):
     def applyPass(self):
         global masterPass
         password = self.enterLine.text()
-        password = hashlib.sha256(password.encode('utf-8'))
-        password = password.hexdigest()
+        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
         masterPass = password
         self.close()
 
@@ -61,14 +62,75 @@ class AccessVaultDialog(QDialog):
         self.enterLine = QLineEdit(self)
         self.dialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.dialog.accepted.connect(self.verifyPassword)
-        self.dialog.rejected.connect(sys.exit())
+        self.dialog.rejected.connect(self.close)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.enterLine)
+        self.layout.addWidget(self.dialog)
+        self.setLayout(self.layout)
 
     def verifyPassword(self):
         global masterPass
-        password = masterPass
+        masterPass = masterPass.rstrip("\n")
+        global vaultAuth
+        comp = (hashlib.sha256(self.enterLine.text().encode('utf-8'))).hexdigest()
 
-        if hashlib.sha256(self.enterLine.text().encode('utf-8').hexdigest()) == password:
+        if masterPass == comp:
             vaultAuth = True
+
+        self.close()
+
+class DeletePassDialog(QDialog):
+    def __init__(self,saveFile,*args,**kwargs):
+        super(DeletePassDialog,self).__init__(*args,**kwargs)
+
+        self.saveFile = saveFile
+        self.label = QLabel("Enter the account name of the password you want to remove:",self)
+        self.enterLine = QLineEdit(self)
+        self.dialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.dialog.accepted.connect(self.selectAccToDelete)
+        self.dialog.rejected.connect(self.close)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.enterLine)
+        self.layout.addWidget(self.dialog)
+        self.setLayout(self.layout)
+
+    def selectAccToDelete(self):
+        for i in range(0,self.saveFile.numberOfLines()):
+            if self.saveFile[i][self.enterLine.text()]:
+                self.done(i)
+        self.done(-1)
+
+class AddExistingPassDialog(QDialog):
+    def __init__(self,saveFile,*args,**kwargs):
+        super(AddExistingPassDialog,self).__init__(*args,**kwargs)
+
+        self.saveFile = saveFile
+        self.label = QLabel("Enter the account name of the password you want to add:",self)
+        self.enterLine = QLineEdit(self)
+        self.enterLine2 = QLineEdit(self)
+        self.label2 = QLabel("Enter the password:")
+        self.dialog = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.dialog.accepted.connect(self.addPass)
+        self.dialog.rejected.connect(self.close)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.enterLine)
+        self.layout.addWidget(self.label2)
+        self.layout.addWidget(self.enterLine2)
+        self.layout.addWidget(self.dialog)
+        self.setLayout(self.layout)
+
+    def addPass(self):
+        global newLine
+        for i in self.saveFile:
+            if i[self.enterLine.text()]:
+                self.done(-1)
+        newLine = SaveFileLine(self.enterLine.text(),d.encrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',self.enterLine2.text()))
         self.close()
 
 class SaveFileLine:
@@ -77,13 +139,13 @@ class SaveFileLine:
         self.account = account
 
     def __getitem__(self,index):
-        if index = self.account:
+        if index == self.account:
             return True
         else:
             return False
 
     def __str__(self):
-        return self.account + ',' + self.encryptedPassword + '\n'
+        return self.account + ',' + str(self.encryptedPassword) + "\n"
 
     def getAccountName(self):
         return self.account
@@ -92,7 +154,7 @@ class SaveFileLine:
         global vaultAuth
         if vaultAuth == False:
             sys.exit()
-        return decrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',self.encryptedPassword)
+        return d.decrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',self.encryptedPassword)
 
 class SaveFile: #data type to store all of the lines
     def __init__(self,passwordHash,lines):
@@ -127,6 +189,7 @@ class PasswordGenerator(QMainWindow):
         QMainWindow.__init__(self)
         self.centralWidget = QWidget()
         self.setCentralWidget(self.centralWidget)
+        self.layout = QVBoxLayout()
 
         self.createNewPasswordField = QFormLayout()
 
@@ -139,26 +202,29 @@ class PasswordGenerator(QMainWindow):
         self.userLineLabel = QLabel(self.tr("Enter website password is for:"))
         self.spinBox.valueChanged.connect(self.generatePassword)
         self.passwordLengthInputLabel = QLabel(self.tr("Password Length:"))
+        self.passwordField = QPlainTextEdit(self)
 
         self.createNewPasswordField.addRow(self.userLineLabel,self.userLineEdit)
         self.createNewPasswordField.addRow(self.passwordLengthInputLabel,self.spinBox)
-        self.btn = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.btn.accepted.connect(self.generatePassword)
-        self.btn.rejected.connect(self.resetParameters)
 
-        self.centralWidget.setLayout(self.createNewPasswordField)
+        self.layout.addLayout(self.createNewPasswordField)
+        self.layout.addWidget(self.passwordField)
+
+        self.centralWidget.setLayout(self.layout)
         #add actions below
         self.viewPasswords = QAction("View Passwords",self)
+        self.viewPasswords.triggered.connect(self.viewPass)
         self.addPassword = QAction("Add Password",self)
+        self.addPassword.triggered.connect(self.addExistingPass)
         self.deletePassword = QAction("Delete Password",self)
+        self.deletePassword.triggered.connect(self.deletePasswordFunc)
         self.deleteAllPasswords = QAction("Delete All Passwords",self)
-        self.createNewPassword = QAction("Create New Password",self)
+        self.deleteAllPasswords.triggered.connect(self.deleteAllPasswordsFunc)
         self.passMenu = QMenu("Add/Delete Passwords",self)
         #set menu below
         self.passMenu.addAction(self.addPassword)
         self.passMenu.addAction(self.deletePassword)
         self.passMenu.addAction(self.deleteAllPasswords)
-        self.passMenu.addAction(self.createNewPassword)
         self.file = self.menu.addMenu("&File")
         self.file.addAction(self.viewPasswords)
         self.passMenu = self.file.addMenu(self.passMenu)
@@ -171,44 +237,97 @@ class PasswordGenerator(QMainWindow):
         self.readFileData()
         global masterPass
         masterPass = self.saveFile.getPasswordHash()
-
-        authThisSession()
+        self.authThisSession()
 
     def resetParameters(self):
         self.userLineEdit.clear()
         self.spinBox.setValue(0)
+        self.passwordField.clear()
 
-    def deletePassword(self,account):
+    def deletePasswordFunc(self,account):
         global vaultAuth
         if vaultAuth == False:
             sys.exit()
-        for i in range(0,saveFile.numberOfLines()):
-            if saveFile[i][account]:
-                self.saveFile - i
-        self.savePassTofile()
 
-    def deleteAllPasswords(self):
+        deletePass = DeletePassDialog(self.saveFile)
+        deletePass.setWindowTitle("Choose which password you want to remove!")
+        accountIndex = deletePass.exec_()
+        if isinstance(accountIndex,int):
+            self.saveFile - accountIndex
+        else:
+            none = QDialog()
+            none.setWindowTitle("Failed")
+            none.setText("No account with that name!")
+            none.exec_()
+
+        for i in range(0,self.saveFile.numberOfLines()):
+            if self.saveFile[i][account]:
+                self.saveFile - i
+        self.savePassToFile()
+        self.resetParameters()
+        self.viewPass()
+
+    def viewPass(self):
+        text = ""
+        for i in self.saveFile:
+            text += i.getAccountName() + ": " + str(i.decryptPassword())[2:-1] + "\n"
+            print(text)
+        self.passwordField.insertPlainText(text)
+
+    def deleteAllPasswordsFunc(self):
         global vaultAuth
         global masterPass
         if vaultAuth == False:
             sys.exit()
         self.saveFile = SaveFile(masterPass,[])
-        self.savePassTofile()
+        self.savePassToFile()
+        self.resetParameters()
+        self.viewPass()
+
+    def addExistingPass(self):
+        global newLine
+        done = AddExistingPassDialog(self.saveFile)
+        done.setWindowTitle("Add existing password!")
+        answer = done.exec_()
+        if answer == -1:
+            done = QDialog()
+            done.setWindowTitle("Account Already Exists!")
+            done.exec_()
+            return
+        else:
+            if newLine != 0:
+                self.saveFile.append(newLine)
+                self.savePassToFile()
+                self.resetParameters()
+                self.viewPass()
 
     def generatePassword(self):
         global vaultAuth
-        if vaultAuth = False:
+
+        if vaultAuth == False:
             sys.exit()
+
+        if self.spinBox.value() < 1:
+            return
         password = gen.gen_code(self.spinBox.value())
-        self.account = userLineEdit.text()
-        self.encryptedPass = encrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',password)
-        self.saveFile.addLine(SaveFileLine(self.account,self.encryptedPass))
+        self.account = self.userLineEdit.text()
+        for i in self.saveFile:
+            if i[self.account]:
+                return
+        self.encryptedPass = d.encrypt(b'ACYDb3cNfYTuI0AuX6aUdScLNZfo_Vcowh47Q_uUMdM=',password)
+        self.saveFile.append(SaveFileLine(self.account,self.encryptedPass))
         self.savePassToFile()
+        self.resetParameters()
+        self.viewPass()
+        for i in self.saveFile:
+            print(str(i))
         
     def authThisSession(self):
-        enterMasterPass = AccessVaultDialog(self)
-        enterMasterPass.setWindowTitle("Access your password vault!")
-        enterMasterPass.exec_()
+        global vaultAuth
+        if vaultAuth == False:
+            enterMasterPass = AccessVaultDialog(self)
+            enterMasterPass.setWindowTitle("Access your password vault!")
+            enterMasterPass.exec_()
 
     def savePassToFile(self): #pass savefile object to save
         file = open(self.filename,'wt')
@@ -216,10 +335,10 @@ class PasswordGenerator(QMainWindow):
 
         file.write(hashPass + '\n')
         if self.saveFile.numberOfLines() > 0:
-            fileLines = self.saveFile.getLines()
-            for i in fileLines:
-                line = i.getLine()
+            for i in self.saveFile:
+                line = str(i)
                 file.write(line)
+        file.close()
 
     def readFileData(self):
         fileExists = os.path.isfile(self.filename)
@@ -236,7 +355,7 @@ class PasswordGenerator(QMainWindow):
         lines = []
 
         for line in file:
-            lines.append(line)
+            lines.append(line.rstrip("\n"))
 
         file.close()
 
@@ -244,9 +363,14 @@ class PasswordGenerator(QMainWindow):
         lines.pop(0)
 
         for line in lines:
-            comma = findComma(line)
-            saveFileLine = SaveFileLine(line[0:comma],line[comma + 1:])
-            self.saveFile.addLine(saveFileLine)
+            comma = self.findComma(line)
+            if comma is None:
+                return
+            passcode = line[comma + 1:]
+            passcode = passcode[2:-1]
+            passcode = passcode.encode()
+            saveFileLine = SaveFileLine(line[0:comma],passcode)
+            self.saveFile.append(saveFileLine)
 
     def searchForPassword(accountName):
         for i in saveFile:
@@ -254,7 +378,7 @@ class PasswordGenerator(QMainWindow):
                 return str(i)
         return "No Password Found"
 
-    def findComma(line):
+    def findComma(c,line):
         for i in range(0,len(line)):
             if line[i] == ',':
                 return i
