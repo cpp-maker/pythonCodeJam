@@ -58,5 +58,7 @@ def decrypt(key, line):
 	except Exception:
 		print("wrong password")
 
-def what_user_want():
-	pass
+def what_user_want(input_of_user):
+	if input_of_user == "encrypt":
+
+	
