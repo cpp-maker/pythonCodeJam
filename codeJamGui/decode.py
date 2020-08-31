@@ -38,27 +38,18 @@ def key_gen(password_provided):
 	return key
 
 def pass_gen(lenght):
-	try:
-		passwordd = ("".join(random.choice(string.printable.strip())for _ in range(int(lenght))))
-		return passwordd
-	except Exception:
-		print("something went wrong!!!! try entering the length  like 10, 11 etc.")
+	passwordd = ("".join(random.choice(string.printable.strip())for _ in range(int(lenght))))
+	return passwordd
 
 def encrypt(key, password):
 	f = Fernet(key)
 	encrypted = f.encrypt(password.encode())  # Encrypt the bytes
-	print(encrypted)
-	print('done')
 
 def decrypt(key, line):
-	try:
-		file = open("""hey pro change this""", 'rb')
-		f = Fernet(key)
-		lines = file.readlines()# it'll store lines in list
-		decrypted = f.decrypt(lines[line])
-		print(decrypted)
-	except Exception:
-		print("wrong password")
+	file = open("""hey pro change this""", 'rb')
+	f = Fernet(key)
+	lines = file.readlines()# it'll store lines in list
+	decrypted = f.decrypt(lines[line])
 
 def what_user_want(input_of_user, password_length=0, password_provided=0, line=0):
 	secure_key = key_gen(password_provided)
