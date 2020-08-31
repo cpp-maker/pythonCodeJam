@@ -311,6 +311,8 @@ class PasswordGenerator(QMainWindow):
             return
         password = gen.gen_code(self.spinBox.value())
         self.account = self.userLineEdit.text()
+        if self.account == "":
+            return
         for i in self.saveFile:
             if i[self.account]:
                 return
