@@ -48,13 +48,15 @@ def encrypt(key, password):
 	print(encrypted)
 	print('done')
 
-def decrypt(key):
+def decrypt(key, line):
 	try:
 		file = open("""hey pro change this""", 'rb')
 		f = Fernet(key)
-		decrypted = f.decrypt(file.readline)
+		lines = file.readlines()# it'll store lines in list
+		decrypted = f.decrypt(lines[line])
 		print(decrypted)
-	except InvalidToken:
+	except Exception:
 		print("wrong password")
-pass_gen(password_length)
-encrypt(key, passwordd)
+
+def what_user_want():
+	pass
