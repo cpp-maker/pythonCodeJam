@@ -24,10 +24,10 @@ password_length = input()#length
 password_provided = input('enter password:')
 def key_gen(password_provided):
 	password = password_provided.encode()  # Convert to type bytes
-	salt = b'H\x8a\x04\x1b\xbdV\xb9\xfd\xab\x02\xfe!\xeb\x9b$\xce'
+	salt = b'\xa5\x81\xadC\x0eF\x17gaxj\x87fF\xeb\xc9\x03~\x9f\xf9|\xc5\xf4\x80\xc6\xd6\xbe\xb7\xd2\x98\xfe\x91'
 	kdf = PBKDF2HMAC(
 		algorithm=hashes.SHA256(),
-		length=35,
+		length=32,
 		salt=salt,
 		iterations=100000,
 		backend=default_backend()
