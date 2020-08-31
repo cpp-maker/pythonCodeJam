@@ -16,12 +16,8 @@ Criteria for project:
 
 >*Allow user to save existing passwords to computer
 
->*Suggest stronger passwords for user
-
 >*Encrypt passwords before saving
 
 >*Save the passwords with the corresponding sites
 
 >*Use password to allow user to decrypt the passwords
-
->*Allow user to check/search for passwords by site
